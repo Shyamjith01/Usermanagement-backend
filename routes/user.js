@@ -39,7 +39,7 @@ router.post('/login', (req, res) => {
       console.log(resp, "reponse tand statsu")
       res.json({ status: true, userdetails: resp.userDetail })
     } else {
-      res.json({ status: false, message: 'Incorrect email or password' })
+      res.json({ status: false,resp})
     }
   })
 })

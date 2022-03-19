@@ -34,19 +34,24 @@ module.exports = {
             let user = await db.get().collection(collection.USER_COLLECTION).findOne({ email: data.email })
             console.log(user, "user details in userlogin")
             if (user) {
-                let password = data.password
-                console.log(user, "login user")
-                console.log(data.password, user.password, "passwordss")
-                bcrypt.compare(password, user.password).then((resp) => {
-                    if (resp) {
-                        console.log(resp,"login success");
-                        
-                        resolve({status:true,userDetail:user})
-                    } else {
-                        console.log("login failed")
-                        resolve({ status: false })
-                    }
-                })
+                if (user.blocked) {
+                    resolve({status:false,message:'user has been blocked'})
+                } else {
+                    let password = data.password
+                    console.log(user, "login user")
+                    console.log(data.password, user.password, "passwordss")
+                    bcrypt.compare(password, user.password).then((resp) => {
+                        if (resp) {
+                            console.log(resp, "login success");
+
+                            resolve({ status: true, userDetail: user })
+                        } else {
+                            console.log("login failed")
+                            resolve({ status: false })
+                        }
+                    })
+                }
+
             } else {
                 console.log("user not found")
                 resolve({ status: false })
