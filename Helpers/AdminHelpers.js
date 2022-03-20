@@ -9,7 +9,6 @@ module.exports = {
             let admin = await db.get().collection(collection.ADMIN_COLLECTION).findOne({ email: data.email })
             if (admin) {
                 if (data.password == admin.password) {
-                    console.log("Admin login done");
                     resolve({ status: true, admin })
                 } else {
                     resolve({ status: false, message: "incorrect password" })
@@ -22,7 +21,6 @@ module.exports = {
     getAllUser: () => {
         return new Promise(async (resolve, reject) => {
             let AllUsers = await db.get().collection(collection.USER_COLLECTION).find().toArray()
-            console.log(AllUsers, "All users")
             resolve(AllUsers)
         })
     },
@@ -88,8 +86,14 @@ module.exports = {
                     }
                 }
             ).then((resp) => {
-                resolve({status:true,message:'Edits updated'})
+                resolve({ status: true, message: 'Edits updated' })
             })
+        })
+    },
+    blockedUser: () => {
+        return new Promise(async(resolve, reject) => {
+            let BlockedUsers = await db.get().collection(collection.USER_COLLECTION).find({ blocked: true }).toArray()
+            resolve(BlockedUsers)
         })
     }
 }

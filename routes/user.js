@@ -1,4 +1,5 @@
 var express = require('express');
+const AdminHelpers = require('../Helpers/AdminHelpers');
 const LoginHelpers = require('../Helpers/LoginHelpers');
 var router = express.Router();
 
@@ -10,11 +11,8 @@ router.get('/', function (req, res, next) {
   res.render('index', { title: 'Express' });
 });
 router.post('/signUp', (req, res) => {
-  console.log("insidee")
   const userData = req.body;
-  console.log(userData, "ysss");
   loginHelpers.UserSignUp(req.body).then((response) => {
-    console.log(response, "response")
     if (res.status) {
       // req.session.user = 
       // req.session.user.Login = true
@@ -33,14 +31,35 @@ router.post('/signUp', (req, res) => {
 })
 
 router.post('/login', (req, res) => {
-  console.log("inside of login")
   LoginHelpers.UserLogin(req.body).then((resp) => {
     if (resp.status) {
-      console.log(resp, "reponse tand statsu")
       res.json({ status: true, userdetails: resp.userDetail })
     } else {
-      res.json({ status: false,resp})
+      res.json({ status: false, resp })
     }
+  })
+})
+
+
+router.get('/emailFinder/:email', async (req, res) => {
+  let user = await LoginHelpers.findEmail(req.params.email)
+  res.json({ status: true, user })
+})
+
+//change password
+router.post('/changePassword', (req, res) => {
+  LoginHelpers.changePassword(req.body).then((resp) => {
+    if (resp.status) {
+      res.json({ status: true, message: 'password change succesfuly' })
+    } else {
+      res.json({ status: false, message: 'something went wrong' })
+    }
+  })
+})
+
+router.post('/googleOauth', async(req,res) => {
+  await LoginHelpers.googleLogin(req.body).then((response)=>{
+    res.json(response)
   })
 })
 

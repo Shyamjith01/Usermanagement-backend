@@ -1,6 +1,7 @@
 const db = require('../config/connection')
 var collection = require('../config/collection');
-var bcrypt = require('bcrypt')
+var bcrypt = require('bcrypt');
+const { ObjectId } = require('mongodb');
 
 
 module.exports = {
@@ -30,33 +31,64 @@ module.exports = {
     UserLogin: (data) => {
         return new Promise(async (resolve, reject) => {
             let response = {}
-            console.log(data, "data in params")
             let user = await db.get().collection(collection.USER_COLLECTION).findOne({ email: data.email })
-            console.log(user, "user details in userlogin")
             if (user) {
                 if (user.blocked) {
-                    resolve({status:false,message:'user has been blocked'})
+                    resolve({ status: false, message: 'user has been blocked' })
                 } else {
                     let password = data.password
-                    console.log(user, "login user")
-                    console.log(data.password, user.password, "passwordss")
                     bcrypt.compare(password, user.password).then((resp) => {
                         if (resp) {
-                            console.log(resp, "login success");
 
                             resolve({ status: true, userDetail: user })
                         } else {
-                            console.log("login failed")
                             resolve({ status: false })
                         }
                     })
                 }
 
             } else {
-                console.log("user not found")
                 resolve({ status: false })
             }
 
+        })
+    }
+    ,
+    findEmail: (email) => {
+        return new Promise(async (resolve, reject) => {
+            let user = await db.get().collection(collection.USER_COLLECTION).findOne({ email: email })
+            resolve(user)
+        })
+    },
+    //change password
+    changePassword: (data) => {
+        let id = data.id
+        return new Promise(async (resolve, reject) => {
+            data.pass1 = await bcrypt.hash(data.pass1, 10)
+            db.get().collection(collection.USER_COLLECTION).updateOne({ _id: ObjectId(id) },
+                {
+                    $set: {
+                        password: data.pass1
+                    }
+                }).then((response) => {
+                    resolve({ status: true })
+                })
+        })
+    },
+    googleLogin: (data) => {
+        return new Promise(async(resolve, reject) => {
+            let obj = {
+                fname: data.givenName,
+                lname: data.familyName,
+                email: data.email,
+                uname: data.name,
+                phone: data.googleId,
+                google: true,
+                status:true
+            }
+            await db.get().collection(collection.USER_COLLECTION).insertOne(obj).then((resp) => {
+                resolve({status:true})
+            })
         })
     }
 }
